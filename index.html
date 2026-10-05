@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FinTrack - Smart Personal Finance</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+</head>
+<body>
+  <button class="mobile-menu-btn" id="mobile-menu-btn">&#9776;</button>
+  <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+  <div id="app">
+    <nav class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <div class="logo">
+          <div class="logo-icon">&#8377;</div>
+          <span class="logo-text">FinTrack</span>
+        </div>
+        <button class="theme-toggle" id="theme-toggle" title="Toggle theme">&#9790;</button>
+      </div>
+      <ul class="nav-links">
+        <li><a href="#" class="nav-link active" data-view="dashboard"><span class="nav-icon">&#9632;</span> Dashboard</a></li>
+        <li><a href="#" class="nav-link" data-view="transactions"><span class="nav-icon">&#8644;</span> Transactions</a></li>
+        <li><a href="#" class="nav-link" data-view="budgets"><span class="nav-icon">&#9881;</span> Budgets</a></li>
+        <li><a href="#" class="nav-link" data-view="goals"><span class="nav-icon">&#9733;</span> Goals</a></li>
+        <li><a href="#" class="nav-link" data-view="reports"><span class="nav-icon">&#9776;</span> Reports</a></li>
+        <li><a href="#" class="nav-link" data-view="simulator"><span class="nav-icon">&#9881;</span> Simulator</a></li>
+      </ul>
+    </nav>
+
+    <main class="content">
+      <!-- Dashboard -->
+      <section id="view-dashboard" class="view active">
+        <div class="greeting" id="dash-greeting">Good morning</div>
+        <div class="greeting-sub" id="dash-sub">Here's your financial overview</div>
+
+        <div class="summary-cards" id="summary-cards"></div>
+
+        <div id="health-section"></div>
+
+        <div id="insights-section"></div>
+
+        <div id="achievements-section"></div>
+
+        <div class="charts-row">
+          <div class="chart-container">
+            <div class="chart-title">Income vs Expenses</div>
+            <canvas id="chart-income-expense"></canvas>
+          </div>
+          <div class="chart-container">
+            <div class="chart-title">Spending by Category</div>
+            <canvas id="chart-categories"></canvas>
+          </div>
+        </div>
+
+        <div id="cashflow-section"></div>
+
+        <div class="table-card" style="margin-top:20px">
+          <div style="padding:20px 24px 12px"><div class="section-title">Recent Transactions</div></div>
+          <table class="txn-table">
+            <thead><tr><th>Date</th><th>Description</th><th>Category</th><th>Amount</th></tr></thead>
+            <tbody id="recent-txn-body"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Transactions -->
+      <section id="view-transactions" class="view">
+        <div class="view-header">
+          <h1 class="page-title">Transactions</h1>
+          <button class="btn btn-primary" id="btn-add-txn">+ Add Transaction</button>
+        </div>
+
+        <div class="quick-entry">
+          <input type="text" class="quick-entry-input" id="quick-entry" placeholder='Quick add: "Spent 500 on groceries" or "Salary 50000"'>
+          <div class="quick-entry-preview" id="quick-preview">
+            <span id="quick-preview-text"></span>
+            <button class="btn btn-primary btn-sm" id="quick-preview-add">Add</button>
+          </div>
+        </div>
+
+        <div class="filters">
+          <select class="filter-input" id="filter-type"><option value="all">All Types</option><option value="income">Income</option><option value="expense">Expense</option></select>
+          <select class="filter-input" id="filter-category"><option value="all">All Categories</option></select>
+          <input type="month" class="filter-input" id="filter-month">
+          <input type="text" class="filter-input search-input" id="filter-search" placeholder="Search...">
+        </div>
+
+        <div class="table-card">
+          <table class="txn-table">
+            <thead><tr><th>Date</th><th>Description</th><th>Category</th><th>Type</th><th>Amount</th><th>Actions</th></tr></thead>
+            <tbody id="txn-body"></tbody>
+          </table>
+          <div class="txn-totals" id="txn-totals"></div>
+        </div>
+      </section>
+
+      <!-- Budgets -->
+      <section id="view-budgets" class="view">
+        <div class="view-header">
+          <h1 class="page-title">Budgets</h1>
+          <button class="btn btn-primary" id="btn-add-budget">+ Set Budget</button>
+        </div>
+        <div class="budget-total" id="budget-total"></div>
+        <div class="budget-grid" id="budget-cards"></div>
+      </section>
+
+      <!-- Goals -->
+      <section id="view-goals" class="view">
+        <div class="view-header">
+          <h1 class="page-title">Savings Goals</h1>
+          <button class="btn btn-primary" id="btn-add-goal">+ New Goal</button>
+        </div>
+        <div class="goals-grid" id="goals-grid"></div>
+      </section>
+
+      <!-- Reports -->
+      <section id="view-reports" class="view">
+        <div class="view-header">
+          <h1 class="page-title">Financial Report Card</h1>
+          <div style="display:flex;gap:10px;align-items:center">
+            <select class="filter-input" id="report-month"></select>
+            <button class="btn btn-primary" id="btn-generate-report">Generate</button>
+          </div>
+        </div>
+        <div id="report-output"></div>
+      </section>
+
+      <!-- Simulator -->
+      <section id="view-simulator" class="view">
+        <div class="view-header">
+          <h1 class="page-title">Financial Simulator</h1>
+        </div>
+        <div class="card" style="margin-bottom:24px">
+          <div class="chart-title" style="margin-bottom:16px">What-If Scenario</div>
+          <div class="sim-controls">
+            <div class="form-group">
+              <label class="form-label">Monthly Income (&#8377;)</label>
+              <input type="number" class="form-input" id="sim-income" value="50000">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Monthly Expenses (&#8377;)</label>
+              <input type="number" class="form-input" id="sim-expenses" value="35000">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Monthly Savings (&#8377;)</label>
+              <input type="number" class="form-input" id="sim-savings" value="10000">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Return Rate (% annual)</label>
+              <input type="number" class="form-input" id="sim-return" value="8" step="0.5">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Years</label>
+              <input type="number" class="form-input" id="sim-years" value="5" min="1" max="30">
+            </div>
+          </div>
+          <button class="btn btn-primary" id="btn-simulate">Run Simulation</button>
+        </div>
+        <div class="sim-milestones" id="sim-milestones"></div>
+        <div class="chart-container" id="sim-chart-container" style="display:none">
+          <div class="chart-title">Projected Growth</div>
+          <canvas id="chart-simulator"></canvas>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- FAB -->
+  <div class="fab">
+    <button class="fab-btn" id="fab-btn">+</button>
+    <div class="fab-menu" id="fab-menu">
+      <button class="fab-menu-item" data-action="add-txn">&#8644; Add Transaction</button>
+      <button class="fab-menu-item" data-action="add-budget">&#9881; Set Budget</button>
+      <button class="fab-menu-item" data-action="add-goal">&#9733; New Goal</button>
+      <button class="fab-menu-item" data-action="add-sub">&#8635; Add Subscription</button>
+      <button class="fab-menu-item" data-action="afford-check">&#10004; Can I Afford?</button>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- Transaction Modal -->
+  <div class="modal-overlay" id="modal-txn">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 class="modal-title" id="modal-txn-title">Add Transaction</h2>
+        <button class="modal-close" data-close="modal-txn">&times;</button>
+      </div>
+      <form id="form-txn">
+        <input type="hidden" id="txn-id">
+        <div class="form-group">
+          <label class="form-label" for="txn-type">Type</label>
+          <select class="form-input" id="txn-type" required><option value="expense">Expense</option><option value="income">Income</option></select>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="txn-amount">Amount (&#8377;)</label>
+          <input type="number" class="form-input" id="txn-amount" step="0.01" min="0.01" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="txn-category">Category</label>
+          <select class="form-input" id="txn-category" required></select>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="txn-date">Date</label>
+          <input type="date" class="form-input" id="txn-date" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="txn-desc">Description</label>
+          <input type="text" class="form-input" id="txn-desc" placeholder="e.g., Grocery shopping" required>
+        </div>
+        <div class="form-actions">
+          <button type="button" class="btn btn-secondary" data-close="modal-txn">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Budget Modal -->
+  <div class="modal-overlay" id="modal-budget">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 class="modal-title">Set Monthly Budget</h2>
+        <button class="modal-close" data-close="modal-budget">&times;</button>
+      </div>
+      <form id="form-budget">
+        <div class="form-group">
+          <label class="form-label" for="budget-category">Category</label>
+          <select class="form-input" id="budget-category" required></select>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="budget-amount">Monthly Limit (&#8377;)</label>
+          <input type="number" class="form-input" id="budget-amount" step="1" min="1" required>
+        </div>
+        <div class="form-actions">
+          <button type="button" class="btn btn-secondary" data-close="modal-budget">Cancel</button>
+          <button type="submit" class="btn btn-primary">Set Budget</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Goal Modal -->
+  <div class="modal-overlay" id="modal-goal">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 class="modal-title" id="modal-goal-title">New Savings Goal</h2>
+        <button class="modal-close" data-close="modal-goal">&times;</button>
+      </div>
+      <form id="form-goal">
+        <input type="hidden" id="goal-id">
+        <div class="form-group">
+          <label class="form-label" for="goal-name">Goal Name</label>
+          <input type="text" class="form-input" id="goal-name" placeholder="e.g., New Laptop" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="goal-target">Target Amount (&#8377;)</label>
+          <input type="number" class="form-input" id="goal-target" min="1" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="goal-saved">Already Saved (&#8377;)</label>
+          <input type="number" class="form-input" id="goal-saved" min="0" value="0">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="goal-date">Target Date</label>
+          <input type="date" class="form-input" id="goal-date">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="goal-icon">Icon</label>
+          <select class="form-input" id="goal-icon">
+            <option value="&#127968;">&#127968; Home</option>
+            <option value="&#128663;">&#128663; Car</option>
+            <option value="&#9992;">&#9992; Travel</option>
+            <option value="&#128187;">&#128187; Tech</option>
+            <option value="&#127891;">&#127891; Education</option>
+            <option value="&#128142;">&#128142; Luxury</option>
+            <option value="&#127793;">&#127793; Emergency</option>
+            <option value="&#11088;">&#11088; Other</option>
+          </select>
+        </div>
+        <div class="form-actions">
+          <button type="button" class="btn btn-secondary" data-close="modal-goal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Goal</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Subscription Modal -->
+  <div class="modal-overlay" id="modal-sub">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 class="modal-title">Add Subscription</h2>
+        <button class="modal-close" data-close="modal-sub">&times;</button>
+      </div>
+      <form id="form-sub">
+        <input type="hidden" id="sub-id">
+        <div class="form-group">
+          <label class="form-label" for="sub-name">Service Name</label>
+          <input type="text" class="form-input" id="sub-name" placeholder="e.g., Netflix" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="sub-amount">Amount (&#8377;)</label>
+          <input type="number" class="form-input" id="sub-amount" min="1" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="sub-freq">Frequency</label>
+          <select class="form-input" id="sub-freq"><option value="monthly">Monthly</option><option value="yearly">Yearly</option></select>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="sub-category">Category</label>
+          <select class="form-input" id="sub-category">
+            <option value="Entertainment">Entertainment</option>
+            <option value="Utilities">Utilities</option>
+            <option value="Food">Food & Dining</option>
+            <option value="Health">Health</option>
+            <option value="Education">Education</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+        <div class="form-actions">
+          <button type="button" class="btn btn-secondary" data-close="modal-sub">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Can I Afford Modal -->
+  <div class="modal-overlay" id="modal-afford">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 class="modal-title">Can I Afford This?</h2>
+        <button class="modal-close" data-close="modal-afford">&times;</button>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Item / Purchase</label>
+        <input type="text" class="form-input" id="afford-item" placeholder="e.g., iPhone 15">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Cost (&#8377;)</label>
+        <input type="number" class="form-input" id="afford-cost" min="1">
+      </div>
+      <button class="btn btn-primary" id="btn-afford-check" style="width:100%">Check Affordability</button>
+      <div id="afford-result"></div>
+    </div>
+  </div>
+
+  <!-- Deposit to Goal Modal -->
+  <div class="modal-overlay" id="modal-deposit">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 class="modal-title">Add to Savings</h2>
+        <button class="modal-close" data-close="modal-deposit">&times;</button>
+      </div>
+      <form id="form-deposit">
+        <input type="hidden" id="deposit-goal-id">
+        <div class="form-group">
+          <label class="form-label" for="deposit-amount">Amount (&#8377;)</label>
+          <input type="number" class="form-input" id="deposit-amount" min="1" required>
+        </div>
+        <div class="form-actions">
+          <button type="button" class="btn btn-secondary" data-close="modal-deposit">Cancel</button>
+          <button type="submit" class="btn btn-primary">Deposit</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="js/data.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
