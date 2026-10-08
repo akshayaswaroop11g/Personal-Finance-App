@@ -203,12 +203,17 @@ class FinanceStore {
 
   // Financial Health Score
   getFinancialHealth(yearMonth) {
+    if (this.transactions.length === 0) return null;
+
     const totals = this.getMonthlyTotals(yearMonth);
+    // No real financial activity for this period means there is no meaningful health score.
+    if (totals.count === 0 || (totals.income === 0 && totals.expenses === 0)) return null;
+
     const budgetStatus = this.getBudgetStatus(yearMonth);
     const prevYM = this.getPrevMonth(yearMonth);
     const prevTotals = this.getMonthlyTotals(prevYM);
 
-    let budgetScore = 25;
+    let budgetScore = 0;
     if (budgetStatus.length > 0) {
       const underBudget = budgetStatus.filter(b => b.pct <= 100).length;
       budgetScore = Math.round((underBudget / budgetStatus.length) * 25);
@@ -220,18 +225,20 @@ class FinanceStore {
       savingScore = Math.min(25, Math.round(rate * 125));
     }
 
-    let spendingScore = 25;
+    let spendingScore = 0;
+    if (prevTotals.expenses > 0) {
+      spendingScore = Math.max(0, Math.min(25, 25 - Math.round((totals.expenses / prevTotals.expenses - 1) * 50)));
+    }
     if (prevTotals.expenses > 0 && totals.expenses > prevTotals.expenses * 1.2) {
       spendingScore = Math.max(0, 25 - Math.round((totals.expenses / prevTotals.expenses - 1) * 50));
     }
 
-    const daysThisMonth = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).getDate();
     const dayOfMonth = new Date().getDate();
     const hasRecentTxn = this.transactions.some(t => {
       const diff = (new Date() - new Date(t.date)) / (1000 * 60 * 60 * 24);
       return diff <= 7;
     });
-    let consistencyScore = hasRecentTxn ? 20 : 10;
+    let consistencyScore = hasRecentTxn ? 20 : 0;
     if (totals.count >= dayOfMonth * 0.5) consistencyScore = 25;
 
     const total = Math.min(100, Math.max(0, budgetScore + savingScore + spendingScore + consistencyScore));

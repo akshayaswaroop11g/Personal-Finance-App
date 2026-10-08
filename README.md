@@ -9,7 +9,7 @@ A personal finance management app that tracks income, spending, and savings with
 - **Budget Tracking** - Set monthly budgets per category with progress indicators
 - **Automatic Reports** - Generate detailed monthly reports with breakdowns, charts, and budget performance
 - **Data Persistence** - All data stored in browser localStorage
-- **Sample Data** - Pre-loaded with 6 months of sample data to explore
+- **Sample Data** - Starts with a clean, empty dataset so users can enter and analyze their own financial data
 
 ## Getting Started
 

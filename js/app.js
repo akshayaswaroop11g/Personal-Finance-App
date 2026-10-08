@@ -125,10 +125,11 @@
     const prev = store.getMonthlyTotals(prevMonth);
     const balance = store.getAllTimeBalance();
 
+    const hasData = store.transactions.length > 0;
     const sc = $('#summary-cards');
-    sc.innerHTML = buildStatCard('Total Income', totals.income, 'income', store.getMonthChange(totals.income, prev.income))
-      + buildStatCard('Total Expenses', totals.expenses, 'expense', store.getMonthChange(totals.expenses, prev.expenses), true)
-      + buildStatCard('Net Savings', totals.savings, 'savings', store.getMonthChange(totals.savings, prev.savings))
+    sc.innerHTML = buildStatCard('Total Income', totals.income, 'income', hasData ? store.getMonthChange(totals.income, prev.income) : null)
+      + buildStatCard('Total Expenses', totals.expenses, 'expense', hasData ? store.getMonthChange(totals.expenses, prev.expenses) : null, true)
+      + buildStatCard('Net Savings', totals.savings, 'savings', hasData ? store.getMonthChange(totals.savings, prev.savings) : null)
       + buildStatCard('Balance', balance, 'balance', null);
 
     renderHealthScore(currentMonth);
@@ -157,6 +158,7 @@
   function renderHealthScore(month) {
     const section = $('#health-section');
     const health = store.getFinancialHealth(month);
+    if (!health) { section.innerHTML = ''; return; }
     const pct = health.total;
     const circumference = 2 * Math.PI * 50;
     const offset = circumference - (pct / 100) * circumference;
