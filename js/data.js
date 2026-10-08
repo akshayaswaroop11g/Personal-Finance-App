@@ -36,12 +36,23 @@ function genId() {
 
 class FinanceStore {
   constructor() {
+    this._migrateOldData();
     this.transactions = this._load('ft_transactions') || [];
     this.budgets = this._load('ft_budgets') || {};
     this.goals = this._load('ft_goals') || [];
     this.subscriptions = this._load('ft_subscriptions') || [];
     this.settings = this._load('ft_settings') || { theme: 'light' };
     this.achievements = this._load('ft_achievements') || {};
+  }
+
+  _migrateOldData() {
+    try {
+      if (localStorage.getItem('ft_version') === '2') return;
+      const oldKeys = ['transactions', 'budgets', 'fintrack_transactions', 'fintrack_budgets',
+        'fintrack_settings', 'fintrack_data', 'sampleDataLoaded'];
+      oldKeys.forEach(k => localStorage.removeItem(k));
+      localStorage.setItem('ft_version', '2');
+    } catch {}
   }
 
   _load(key) { try { const d = localStorage.getItem(key); return d ? JSON.parse(d) : null; } catch { return null; } }
