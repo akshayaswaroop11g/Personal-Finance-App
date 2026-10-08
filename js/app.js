@@ -150,7 +150,7 @@
     }
     return `<div class="stat-card ${type}">
       <div class="stat-label">${label}</div>
-      <div class="stat-value">&#8377;${fmt(value)}</div>
+      <div class="stat-value">${formatCurrency(value)}</div>
       ${changeHtml}
     </div>`;
   }
@@ -244,7 +244,7 @@
       },
       options: {
         scales: {
-          y: { beginAtZero: true, ticks: { callback: v => '₹' + fmt(v) } },
+          y: { beginAtZero: true, ticks: { callback: v => formatCurrency(v) } },
           x: {}
         },
         plugins: { legend: { position: 'top' } }
@@ -264,7 +264,7 @@
           cutout: '65%',
           plugins: {
             legend: { position: 'right', labels: { padding: 12, usePointStyle: true, pointStyle: 'circle' } },
-            tooltip: { callbacks: { label: ctx => ctx.label + ': ₹' + fmt(ctx.raw) } }
+            tooltip: { callbacks: { label: ctx => ctx.label + ': ' + formatCurrency(ctx.raw) } }
           }
         }
       });
@@ -281,10 +281,10 @@
         ${forecast.events.map(e => `<div class="cf-event">
           <div class="cf-dot ${e.type}"></div>
           <div class="cf-label">${e.label} <span style="color:var(--text-muted);font-size:12px">(Day ${e.day})</span></div>
-          <div class="cf-amount ${e.amount > 0 ? 'positive' : 'negative'}">${e.amount > 0 ? '+' : '-'}₹${fmt(Math.abs(e.amount))}</div>
+          <div class="cf-amount ${e.amount > 0 ? 'positive' : 'negative'}">${e.amount > 0 ? '+' : '-'}${formatCurrency(Math.abs(e.amount))}</div>
         </div>`).join('')}
       </div>
-      <div style="font-size:13px;color:var(--text-sec)">Projected balance in 30 days: <strong style="color:${forecast.projectedBalance >= 0 ? 'var(--income)' : 'var(--expense)'}">₹${fmt(forecast.projectedBalance)}</strong></div>
+      <div style="font-size:13px;color:var(--text-sec)">Projected balance in 30 days: <strong style="color:${forecast.projectedBalance >= 0 ? 'var(--income)' : 'var(--expense)'}">${formatCurrency(forecast.projectedBalance)}</strong></div>
     </div>`;
   }
 
@@ -299,7 +299,7 @@
       <td>${formatDate(t.date)}</td>
       <td>${escHtml(t.description)}</td>
       <td><span class="txn-cat"><span class="txn-cat-icon">${CATEGORY_ICONS[t.category] || ''}</span> ${t.category}</span></td>
-      <td class="${t.type === 'income' ? 'amount-income' : 'amount-expense'}">${t.type === 'income' ? '+' : '-'}₹${fmt(t.amount)}</td>
+      <td class="${t.type === 'income' ? 'amount-income' : 'amount-expense'}">${t.type === 'income' ? '+' : '-'}${formatCurrency(t.amount)}</td>
     </tr>`).join('');
   }
 
@@ -326,7 +326,7 @@
       <td>${escHtml(t.description)}</td>
       <td><span class="txn-cat"><span class="txn-cat-icon">${CATEGORY_ICONS[t.category] || ''}</span> ${t.category}</span></td>
       <td><span class="badge ${t.type === 'income' ? 'badge-income' : 'badge-expense'}">${t.type}</span></td>
-      <td class="${t.type === 'income' ? 'amount-income' : 'amount-expense'}">${t.type === 'income' ? '+' : '-'}₹${fmt(t.amount)}</td>
+      <td class="${t.type === 'income' ? 'amount-income' : 'amount-expense'}">${t.type === 'income' ? '+' : '-'}${formatCurrency(t.amount)}</td>
       <td class="action-btns">
         <button class="btn btn-sm btn-ghost edit-txn" data-id="${t.id}" title="Edit">&#9998;</button>
         <button class="btn btn-sm btn-danger del-txn" data-id="${t.id}" title="Delete">&#10006;</button>
@@ -335,7 +335,7 @@
 
     const incomeTotal = txns.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0);
     const expenseTotal = txns.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0);
-    $('#txn-totals').innerHTML = `<span>Showing ${txns.length} transactions</span><span style="color:var(--income)">Income: ₹${fmt(incomeTotal)}</span><span style="color:var(--expense)">Expenses: ₹${fmt(expenseTotal)}</span>`;
+    $('#txn-totals').innerHTML = `<span>Showing ${txns.length} transactions</span><span style="color:var(--income)">Income: ${formatCurrency(incomeTotal)}</span><span style="color:var(--expense)">Expenses: ${formatCurrency(expenseTotal)}</span>`;
   }
 
   function populateCategoryFilter() {
@@ -361,9 +361,9 @@
 
     const totalPct = totalBudget > 0 ? (totalSpent / totalBudget * 100).toFixed(0) : 0;
     $('#budget-total').innerHTML = `
-      <div><div class="stat-label">Total Budget</div><div style="font-size:22px;font-weight:700">₹${fmt(totalBudget)}</div></div>
-      <div><div class="stat-label">Total Spent</div><div style="font-size:22px;font-weight:700;color:${totalSpent > totalBudget ? 'var(--expense)' : 'var(--text)'}">₹${fmt(totalSpent)} <span style="font-size:13px;color:var(--text-sec)">(${totalPct}%)</span></div></div>
-      <div><div class="stat-label">Remaining</div><div style="font-size:22px;font-weight:700;color:${totalBudget - totalSpent >= 0 ? 'var(--income)' : 'var(--expense)'}">₹${fmt(totalBudget - totalSpent)}</div></div>
+      <div><div class="stat-label">Total Budget</div><div style="font-size:22px;font-weight:700">${formatCurrency(totalBudget)}</div></div>
+      <div><div class="stat-label">Total Spent</div><div style="font-size:22px;font-weight:700;color:${totalSpent > totalBudget ? 'var(--expense)' : 'var(--text)'}">${formatCurrency(totalSpent)} <span style="font-size:13px;color:var(--text-sec)">(${totalPct}%)</span></div></div>
+      <div><div class="stat-label">Remaining</div><div style="font-size:22px;font-weight:700;color:${totalBudget - totalSpent >= 0 ? 'var(--income)' : 'var(--expense)'}">${formatCurrency(totalBudget - totalSpent)}</div></div>
     `;
 
     const grid = $('#budget-cards');
@@ -376,13 +376,13 @@
       const pct = Math.min(b.pct, 100);
       const color = b.pct > 100 ? 'var(--expense)' : b.pct >= 80 ? 'var(--warning)' : 'var(--income)';
       const statusClass = b.pct > 100 ? 'budget-over' : b.pct >= 80 ? 'budget-warn' : 'budget-ok';
-      const statusText = b.pct > 100 ? `Over by ₹${fmt(b.spent - b.limit)}` : b.pct >= 80 ? 'Near limit' : `₹${fmt(b.remaining)} left`;
+      const statusText = b.pct > 100 ? `Over by ${formatCurrency(b.spent - b.limit)}` : b.pct >= 80 ? 'Near limit' : `${formatCurrency(b.remaining)} left`;
       return `<div class="budget-card">
         <div class="budget-card-header">
           <div class="budget-card-title">${CATEGORY_ICONS[b.category] || ''} ${b.category}</div>
           <button class="btn btn-sm btn-danger del-budget" data-cat="${b.category}" title="Remove">&#10006;</button>
         </div>
-        <div class="budget-info"><span>₹${fmt(b.spent)} of ₹${fmt(b.limit)}</span><span>${b.pct.toFixed(0)}%</span></div>
+        <div class="budget-info"><span>${formatCurrency(b.spent)} of ${formatCurrency(b.limit)}</span><span>${b.pct.toFixed(0)}%</span></div>
         <div class="budget-progress"><div class="budget-progress-bar" style="width:${pct}%;background:${color}"></div></div>
         <div class="budget-status ${statusClass}">${statusText}</div>
       </div>`;
@@ -422,10 +422,10 @@
           </div>
         </div>
         <div class="goal-amounts">
-          <span>Saved: ₹${fmt(g.savedAmount)}</span>
-          <span>Target: ₹${fmt(g.targetAmount)}</span>
+          <span>Saved: ${formatCurrency(g.savedAmount)}</span>
+          <span>Target: ${formatCurrency(g.targetAmount)}</span>
         </div>
-        ${remaining > 0 ? `<div class="goal-remaining">₹${fmt(remaining)} remaining</div>` : '<div class="goal-remaining" style="color:var(--income)">Goal reached!</div>'}
+        ${remaining > 0 ? `<div class="goal-remaining">${formatCurrency(remaining)} remaining</div>` : '<div class="goal-remaining" style="color:var(--income)">Goal reached!</div>'}
         <div class="goal-actions">
           ${remaining > 0 ? `<button class="btn btn-sm btn-success deposit-goal" data-id="${g.id}">+ Add Savings</button>` : ''}
           <button class="btn btn-sm btn-ghost edit-goal" data-id="${g.id}">Edit</button>
@@ -462,9 +462,9 @@
 
     out.innerHTML = `
       <div class="report-summary-grid">
-        <div class="report-stat"><div class="label">Income</div><div class="value" style="color:var(--income)">₹${fmt(r.totals.income)}</div><div class="stat-change ${incomeChange >= 0 ? 'up' : 'down'}" style="margin-top:8px;display:inline-flex">${incomeChange >= 0 ? '&#9650;' : '&#9660;'} ${Math.abs(incomeChange).toFixed(1)}%</div></div>
-        <div class="report-stat"><div class="label">Expenses</div><div class="value" style="color:var(--expense)">₹${fmt(r.totals.expenses)}</div><div class="stat-change ${expenseChange <= 0 ? 'up' : 'down'}" style="margin-top:8px;display:inline-flex">${expenseChange >= 0 ? '&#9650;' : '&#9660;'} ${Math.abs(expenseChange).toFixed(1)}%</div></div>
-        <div class="report-stat"><div class="label">Net Savings</div><div class="value" style="color:${r.totals.savings >= 0 ? 'var(--savings)' : 'var(--expense)'}">₹${fmt(r.totals.savings)}</div><div style="margin-top:8px;font-size:12px;color:var(--text-sec)">Savings rate: ${r.savingsRate}%</div></div>
+        <div class="report-stat"><div class="label">Income</div><div class="value" style="color:var(--income)">${formatCurrency(r.totals.income)}</div><div class="stat-change ${incomeChange >= 0 ? 'up' : 'down'}" style="margin-top:8px;display:inline-flex">${incomeChange >= 0 ? '&#9650;' : '&#9660;'} ${Math.abs(incomeChange).toFixed(1)}%</div></div>
+        <div class="report-stat"><div class="label">Expenses</div><div class="value" style="color:var(--expense)">${formatCurrency(r.totals.expenses)}</div><div class="stat-change ${expenseChange <= 0 ? 'up' : 'down'}" style="margin-top:8px;display:inline-flex">${expenseChange >= 0 ? '&#9650;' : '&#9660;'} ${Math.abs(expenseChange).toFixed(1)}%</div></div>
+        <div class="report-stat"><div class="label">Net Savings</div><div class="value" style="color:${r.totals.savings >= 0 ? 'var(--savings)' : 'var(--expense)'}">${formatCurrency(r.totals.savings)}</div><div style="margin-top:8px;font-size:12px;color:var(--text-sec)">Savings rate: ${r.savingsRate}%</div></div>
       </div>
 
       <div class="report-highlights">
@@ -480,15 +480,15 @@
 
       <div class="report-section">
         <h3>Expenses by Category</h3>
-        ${r.topExpenses.map(([cat, amt]) => `<div class="report-row"><span>${CATEGORY_ICONS[cat] || ''} ${cat}</span><span style="font-weight:600">₹${fmt(amt)}</span></div>`).join('')}
-        <div class="report-row report-total"><span>Total Expenses</span><span style="color:var(--expense)">₹${fmt(r.totals.expenses)}</span></div>
+        ${r.topExpenses.map(([cat, amt]) => `<div class="report-row"><span>${CATEGORY_ICONS[cat] || ''} ${cat}</span><span style="font-weight:600">${formatCurrency(amt)}</span></div>`).join('')}
+        <div class="report-row report-total"><span>Total Expenses</span><span style="color:var(--expense)">${formatCurrency(r.totals.expenses)}</span></div>
       </div>
 
       ${r.budgetStatus.length > 0 ? `<div class="report-section">
         <h3>Budget Performance</h3>
         ${r.budgetStatus.map(b => {
           const color = b.pct > 100 ? 'var(--expense)' : b.pct >= 80 ? 'var(--warning)' : 'var(--income)';
-          return `<div class="report-row"><span>${b.category}</span><span style="color:${color};font-weight:600">${b.pct.toFixed(0)}% (₹${fmt(b.spent)} / ₹${fmt(b.limit)})</span></div>`;
+          return `<div class="report-row"><span>${b.category}</span><span style="color:${color};font-weight:600">${b.pct.toFixed(0)}% (${formatCurrency(b.spent)} / ${formatCurrency(b.limit)})</span></div>`;
         }).join('')}
       </div>` : ''}
 
@@ -525,7 +525,7 @@
 
   // Simulator
   function runSimulation() {
-    const savings = parseFloat($('#sim-savings').value) || 0;
+    const savings = convertToBase(parseFloat($('#sim-savings').value) || 0);
     const returnRate = parseFloat($('#sim-return').value) || 0;
     const years = parseInt($('#sim-years').value) || 5;
 
@@ -549,7 +549,7 @@
 
     $('#sim-milestones').innerHTML = milestones.map(m => {
       const val = points[Math.min(m.months, points.length - 1)]?.balance || 0;
-      return `<div class="sim-milestone"><div class="label">${m.label}</div><div class="value">₹${fmt(val)}</div></div>`;
+      return `<div class="sim-milestone"><div class="label">${m.label}</div><div class="value">${formatCurrency(val)}</div></div>`;
     }).join('');
 
     $('#sim-chart-container').style.display = 'block';
@@ -577,7 +577,7 @@
       },
       options: {
         scales: {
-          y: { ticks: { callback: v => '₹' + fmt(v) } },
+          y: { ticks: { callback: v => formatCurrency(v) } },
           x: {}
         },
         plugins: { legend: { display: false } }
@@ -589,19 +589,19 @@
   function checkAfford() {
     const cost = parseFloat($('#afford-cost').value);
     if (!cost || cost <= 0) { toast('Enter a valid cost', 'error'); return; }
-    const result = store.canAfford(cost);
+    const result = store.canAfford(convertToBase(cost));
     const item = $('#afford-item').value || 'This purchase';
     const d = result.details;
     $('#afford-result').innerHTML = `<div class="afford-result ${result.level}">
       <div class="afford-level">${result.level === 'success' ? '&#10004;' : result.level === 'warning' ? '&#9888;' : '&#10006;'} ${result.title}</div>
-      <div class="afford-title">${escHtml(item)} — ₹${fmt(cost)}</div>
+      <div class="afford-title">${escHtml(item)} — ${formatCurrency(convertToBase(cost))}</div>
       <div class="afford-message">${result.message}</div>
       <div class="afford-details">
-        <div class="afford-detail-row"><span>Current Balance</span><span>₹${fmt(d.currentBalance)}</span></div>
-        <div class="afford-detail-row"><span>After Purchase</span><span style="color:${d.afterBalance >= 0 ? 'var(--income)' : 'var(--expense)'}">₹${fmt(d.afterBalance)}</span></div>
-        <div class="afford-detail-row"><span>Monthly Income</span><span>₹${fmt(d.monthlyIncome)}</span></div>
-        <div class="afford-detail-row"><span>Monthly Spending</span><span>₹${fmt(d.monthlySpending)}</span></div>
-        ${d.remainingBudget !== null ? `<div class="afford-detail-row"><span>Budget Remaining</span><span>₹${fmt(d.remainingBudget)}</span></div>` : ''}
+        <div class="afford-detail-row"><span>Current Balance</span><span>${formatCurrency(d.currentBalance)}</span></div>
+        <div class="afford-detail-row"><span>After Purchase</span><span style="color:${d.afterBalance >= 0 ? 'var(--income)' : 'var(--expense)'}">${formatCurrency(d.afterBalance)}</span></div>
+        <div class="afford-detail-row"><span>Monthly Income</span><span>${formatCurrency(d.monthlyIncome)}</span></div>
+        <div class="afford-detail-row"><span>Monthly Spending</span><span>${formatCurrency(d.monthlySpending)}</span></div>
+        ${d.remainingBudget !== null ? `<div class="afford-detail-row"><span>Budget Remaining</span><span>${formatCurrency(d.remainingBudget)}</span></div>` : ''}
         <div class="afford-detail-row"><span>Savings Rate</span><span>${d.savingsRate}%</span></div>
       </div>
     </div>`;
@@ -612,9 +612,36 @@
   function formatMonth(ym) { return new Date(ym + '-01').toLocaleDateString('en-IN', { month: 'long', year: 'numeric' }); }
   function escHtml(s) { const el = document.createElement('span'); el.textContent = s; return el.innerHTML; }
 
+  // Currency UI
+  function initCurrency() {
+    const select = $('#currency-select');
+    if (!select) return;
+    select.innerHTML = Object.values(CURRENCIES).map(c => `<option value="${c.code}">${c.symbol} ${c.code} — ${c.name}</option>`).join('');
+    select.value = getSelectedCurrency();
+    updateCurrencyLabels();
+  }
+
+  function updateCurrencyLabels() {
+    const c = CURRENCIES[getSelectedCurrency()] || CURRENCIES.INR;
+    $$('[data-currency-symbol]').forEach(el => { el.textContent = c.symbol; });
+    const select = $('#currency-select');
+    if (select && select.value !== c.code) select.value = c.code;
+  }
+
+  function handleCurrencyChange(e) {
+    store.setCurrency(e.target.value);
+    updateCurrencyLabels();
+    renderCurrentView();
+    if ($('#view-simulator').classList.contains('active')) $('#sim-milestones').innerHTML = '';
+    toast(`Currency changed to ${CURRENCIES[e.target.value].name}`);
+  }
+
   // Event listeners
   function init() {
     initTheme();
+    initCurrency();
+
+    $('#currency-select')?.addEventListener('change', handleCurrencyChange);
 
     $$('.nav-link').forEach(link => {
       link.addEventListener('click', e => { e.preventDefault(); navigate(link.dataset.view); });
@@ -680,7 +707,7 @@
         if (text.length < 3) { $('#quick-preview').classList.remove('show'); return; }
         const parsed = store.parseQuickEntry(text);
         if (parsed.amount > 0) {
-          $('#quick-preview-text').innerHTML = `<strong>${parsed.type === 'income' ? 'Income' : 'Expense'}</strong>: ₹${fmt(parsed.amount)} in ${parsed.category} — "${escHtml(parsed.description)}"`;
+          $('#quick-preview-text').innerHTML = `<strong>${parsed.type === 'income' ? 'Income' : 'Expense'}</strong>: ${CURRENCIES[getSelectedCurrency()].symbol}${parsed.amount.toLocaleString('en-IN')} in ${parsed.category} — "${escHtml(parsed.description)}"`;
           $('#quick-preview').classList.add('show');
           $('#quick-preview').dataset.parsed = JSON.stringify(parsed);
         } else {
@@ -690,6 +717,7 @@
     });
     $('#quick-preview-add').addEventListener('click', () => {
       const data = JSON.parse($('#quick-preview').dataset.parsed || '{}');
+      if (data.amount) data.amount = convertToBase(data.amount);
       if (data.amount) {
         store.addTransaction(data);
         toast('Transaction added!');
@@ -709,7 +737,7 @@
           $('#txn-type').value = t.type;
           populateTxnCategories(t.type);
           $('#txn-category').value = t.category;
-          $('#txn-amount').value = t.amount;
+          $('#txn-amount').value = formatDisplayAmount(t.amount);
           $('#txn-date').value = t.date;
           $('#txn-desc').value = t.description;
           openModal('modal-txn');
@@ -744,8 +772,8 @@
           $('#modal-goal-title').textContent = 'Edit Goal';
           $('#goal-id').value = g.id;
           $('#goal-name').value = g.name;
-          $('#goal-target').value = g.targetAmount;
-          $('#goal-saved').value = g.savedAmount;
+          $('#goal-target').value = formatDisplayAmount(g.targetAmount);
+          $('#goal-saved').value = formatDisplayAmount(g.savedAmount);
           $('#goal-date').value = g.targetDate || '';
           $('#goal-icon').value = g.icon || '⭐';
           openModal('modal-goal');
@@ -790,7 +818,7 @@
     e.preventDefault();
     const data = {
       type: $('#txn-type').value,
-      amount: parseFloat($('#txn-amount').value),
+      amount: convertToBase(parseFloat($('#txn-amount').value)),
       category: $('#txn-category').value,
       date: $('#txn-date').value,
       description: $('#txn-desc').value
@@ -809,7 +837,7 @@
 
   function handleBudgetSubmit(e) {
     e.preventDefault();
-    store.setBudget($('#budget-category').value, parseFloat($('#budget-amount').value));
+    store.setBudget($('#budget-category').value, convertToBase(parseFloat($('#budget-amount').value)));
     toast('Budget set!');
     closeModal('modal-budget');
     renderCurrentView();
@@ -819,8 +847,8 @@
     e.preventDefault();
     const data = {
       name: $('#goal-name').value,
-      targetAmount: parseFloat($('#goal-target').value),
-      savedAmount: parseFloat($('#goal-saved').value) || 0,
+      targetAmount: convertToBase(parseFloat($('#goal-target').value)),
+      savedAmount: convertToBase(parseFloat($('#goal-saved').value) || 0),
       targetDate: $('#goal-date').value || null,
       icon: $('#goal-icon').value
     };
@@ -841,8 +869,9 @@
     const id = $('#deposit-goal-id').value;
     const amount = parseFloat($('#deposit-amount').value);
     if (amount > 0) {
-      store.addToGoal(id, amount);
-      toast(`₹${fmt(amount)} added to goal!`);
+      const baseAmount = convertToBase(amount);
+      store.addToGoal(id, baseAmount);
+      toast(`${formatCurrency(baseAmount)} added to goal!`);
     }
     closeModal('modal-deposit');
     renderGoals();
@@ -852,7 +881,7 @@
     e.preventDefault();
     const data = {
       name: $('#sub-name').value,
-      amount: parseFloat($('#sub-amount').value),
+      amount: convertToBase(parseFloat($('#sub-amount').value)),
       frequency: $('#sub-freq').value,
       category: $('#sub-category').value,
       active: true

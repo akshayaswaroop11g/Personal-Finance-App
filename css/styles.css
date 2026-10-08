@@ -344,3 +344,8 @@ body { font-family: 'Inter', system-ui, -apple-system, sans-serif; background: v
   .summary-cards { grid-template-columns: 1fr; }
   .txn-table th:nth-child(3), .txn-table td:nth-child(3) { display: none; }
 }
+
+.currency-panel { margin: 18px 12px 0; padding-top: 18px; border-top: 1px solid rgba(255,255,255,0.08); }
+.currency-panel label { display:block; margin-bottom:8px; color:var(--text-sidebar); font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; }
+.currency-select { width:100%; padding:9px 10px; border:1px solid rgba(255,255,255,0.12); border-radius:9px; background:rgba(255,255,255,0.08); color:var(--text-sidebar-active); font:inherit; font-size:12px; outline:none; }
+.currency-select option { color:#111827; background:#fff; }

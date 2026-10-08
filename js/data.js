@@ -1,3 +1,40 @@
+
+
+// Currency configuration (fixed rates; no external API). Rates are units of each currency per 1 INR.
+const CURRENCIES = {
+  INR: { code: 'INR', name: 'Indian Rupee', symbol: '₹', rate: 1, decimals: 2 },
+  USD: { code: 'USD', name: 'US Dollar', symbol: '$', rate: 0.010336059203169833, decimals: 2 },
+  EUR: { code: 'EUR', name: 'Euro', symbol: '€', rate: 0.00923850115720224, decimals: 2 },
+  GBP: { code: 'GBP', name: 'British Pound', symbol: '£', rate: 0.007822420142407383, decimals: 2 },
+  CAD: { code: 'CAD', name: 'Canadian Dollar', symbol: 'C$', rate: 0.014734112237419968, decimals: 2 },
+  AUD: { code: 'AUD', name: 'Australian Dollar', symbol: 'A$', rate: 0.014846934994681501, decimals: 2 },
+  JPY: { code: 'JPY', name: 'Japanese Yen', symbol: '¥', rate: 1.6342411084256823, decimals: 0 }
+};
+
+function getSelectedCurrency() {
+  return (typeof store !== 'undefined' && store.getSetting('currency')) || 'INR';
+}
+
+function convertFromBase(amount) {
+  const currency = CURRENCIES[getSelectedCurrency()] || CURRENCIES.INR;
+  return Number(amount || 0) * currency.rate;
+}
+
+function convertToBase(amount) {
+  const currency = CURRENCIES[getSelectedCurrency()] || CURRENCIES.INR;
+  return currency.rate ? Number(amount || 0) / currency.rate : Number(amount || 0);
+}
+
+function formatCurrency(amount) {
+  const currency = CURRENCIES[getSelectedCurrency()] || CURRENCIES.INR;
+  const value = convertFromBase(amount);
+  return currency.symbol + value.toLocaleString('en-IN', { minimumFractionDigits: currency.decimals, maximumFractionDigits: currency.decimals });
+}
+
+function formatDisplayAmount(amount) {
+  return convertFromBase(amount).toFixed((CURRENCIES[getSelectedCurrency()] || CURRENCIES.INR).decimals);
+}
+
 const CATEGORIES = {
   income: ['Salary', 'Freelance', 'Investments', 'Gifts', 'Refunds', 'Other Income'],
   expense: ['Food & Dining', 'Groceries', 'Housing', 'Transportation', 'Utilities', 'Healthcare', 'Entertainment', 'Shopping', 'Education', 'Insurance', 'Personal Care', 'Subscriptions', 'Travel', 'Other Expense']
@@ -41,7 +78,7 @@ class FinanceStore {
     this.budgets = this._load('ft_budgets') || {};
     this.goals = this._load('ft_goals') || [];
     this.subscriptions = this._load('ft_subscriptions') || [];
-    this.settings = this._load('ft_settings') || { theme: 'light' };
+    this.settings = this._load('ft_settings') || { theme: 'light', currency: 'INR' };
     this.achievements = this._load('ft_achievements') || {};
   }
 
@@ -154,6 +191,8 @@ class FinanceStore {
 
   // Settings
   setSetting(key, val) { this.settings[key] = val; this._saveSettings(); }
+  setCurrency(code) { if (CURRENCIES[code]) { this.settings.currency = code; this._saveSettings(); } }
+  getCurrency() { return CURRENCIES[this.settings.currency] || CURRENCIES.INR; }
   getSetting(key) { return this.settings[key]; }
 
   // Calculations
@@ -206,8 +245,7 @@ class FinanceStore {
     if (this.transactions.length === 0) return null;
 
     const totals = this.getMonthlyTotals(yearMonth);
-    // No real financial activity for this period means there is no meaningful health score.
-    if (totals.count === 0 || (totals.income === 0 && totals.expenses === 0)) return null;
+    if (totals.count === 0) return null;
 
     const budgetStatus = this.getBudgetStatus(yearMonth);
     const prevYM = this.getPrevMonth(yearMonth);
@@ -227,10 +265,8 @@ class FinanceStore {
 
     let spendingScore = 0;
     if (prevTotals.expenses > 0) {
-      spendingScore = Math.max(0, Math.min(25, 25 - Math.round((totals.expenses / prevTotals.expenses - 1) * 50)));
-    }
-    if (prevTotals.expenses > 0 && totals.expenses > prevTotals.expenses * 1.2) {
-      spendingScore = Math.max(0, 25 - Math.round((totals.expenses / prevTotals.expenses - 1) * 50));
+      const expenseChange = totals.expenses / prevTotals.expenses - 1;
+      spendingScore = expenseChange <= 0 ? 25 : Math.max(0, 25 - Math.round(expenseChange * 50));
     }
 
     const dayOfMonth = new Date().getDate();
@@ -238,8 +274,9 @@ class FinanceStore {
       const diff = (new Date() - new Date(t.date)) / (1000 * 60 * 60 * 24);
       return diff <= 7;
     });
-    let consistencyScore = hasRecentTxn ? 20 : 0;
-    if (totals.count >= dayOfMonth * 0.5) consistencyScore = 25;
+    let consistencyScore = 0;
+    if (totals.count > 0) consistencyScore = Math.min(25, Math.max(5, Math.round((totals.count / Math.max(dayOfMonth, 1)) * 25)));
+    if (hasRecentTxn) consistencyScore = Math.min(25, consistencyScore + 5);
 
     const total = Math.min(100, Math.max(0, budgetScore + savingScore + spendingScore + consistencyScore));
     let label = 'Needs Work';
@@ -291,7 +328,7 @@ class FinanceStore {
 
     const sorted = Object.entries(breakdown).sort(([, a], [, b]) => b - a);
     if (sorted.length > 0) {
-      insights.push({ icon: CATEGORY_ICONS[sorted[0][0]] || '📊', text: `${sorted[0][0]} is your largest expense category at ₹${fmt(sorted[0][1])}.`, type: 'info' });
+      insights.push({ icon: CATEGORY_ICONS[sorted[0][0]] || '📊', text: `${sorted[0][0]} is your largest expense category at ${formatCurrency(sorted[0][1])}.`, type: 'info' });
     }
 
     const overBudget = budgetStatus.filter(b => b.pct > 100);
@@ -460,7 +497,7 @@ class FinanceStore {
     return {
       month: yearMonth, totals, prevTotals, expenseBreakdown, incomeBreakdown,
       budgetStatus, topExpenses, savingsRate, biggestImprovement, biggestConcern,
-      challenge: challengeAmount > 0 ? `Try to save an extra ₹${fmt(challengeAmount)} next month.` : 'Start tracking expenses to set a savings challenge.',
+      challenge: challengeAmount > 0 ? `Try to save an extra ${formatCurrency(challengeAmount)} next month.` : 'Start tracking expenses to set a savings challenge.',
       health: this.getFinancialHealth(yearMonth)
     };
   }
@@ -522,8 +559,8 @@ class FinanceStore {
 
     const month = ym();
     const totals = this.getMonthlyTotals(month);
-    if (totals.savings >= 10000 && !a.save_10k) a.save_10k = { date: today(), name: 'Saver', icon: '💰', desc: 'Saved ₹10,000 in a month' };
-    if (totals.savings >= 25000 && !a.save_25k) a.save_25k = { date: today(), name: 'Super Saver', icon: '💎', desc: 'Saved ₹25,000 in a month' };
+    if (totals.savings >= 10000 && !a.save_10k) a.save_10k = { date: today(), name: 'Saver', icon: '💰', desc: 'Saved a 10,000 INR-equivalent milestone in a month' };
+    if (totals.savings >= 25000 && !a.save_25k) a.save_25k = { date: today(), name: 'Super Saver', icon: '💎', desc: 'Saved a 25,000 INR-equivalent milestone in a month' };
 
     const budgetStatus = this.getBudgetStatus(month);
     if (budgetStatus.length > 0 && budgetStatus.every(b => b.pct <= 100) && !a['budget_master_' + month])

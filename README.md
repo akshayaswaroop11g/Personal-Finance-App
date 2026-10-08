@@ -9,7 +9,7 @@ A personal finance management app that tracks income, spending, and savings with
 - **Budget Tracking** - Set monthly budgets per category with progress indicators
 - **Automatic Reports** - Generate detailed monthly reports with breakdowns, charts, and budget performance
 - **Data Persistence** - All data stored in browser localStorage
-- **Sample Data** - Starts with a clean, empty dataset so users can enter and analyze their own financial data
+- **Sample Data** - Pre-loaded with 6 months of sample data to explore
 
 ## Getting Started
 
@@ -20,3 +20,7 @@ Open `index.html` in any modern web browser. No build step or server required.
 - HTML5, CSS3, JavaScript (vanilla)
 - Chart.js for data visualization
 - localStorage for data persistence
+
+
+### Currency switching
+Supports INR, USD, EUR, GBP, CAD, AUD, and JPY with fixed exchange-rate snapshots and persistent user selection. No exchange-rate API is required.
